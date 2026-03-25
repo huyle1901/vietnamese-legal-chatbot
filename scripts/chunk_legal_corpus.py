@@ -119,6 +119,56 @@ def chunk_text_with_overlap(
     return [c for c in final_chunks if c.strip()]
 
 
+def split_appendix_table_chunks(text: str, max_lines: int = 35) -> list[str]:
+    lines = [ln.rstrip() for ln in text.split("\n")]
+    if not lines:
+        return []
+
+    table_lines = [ln for ln in lines if "|" in ln]
+    if len(table_lines) < 10:
+        return [text.strip()]
+
+    appendix_title = lines[0].strip() if lines and "PHỤ LỤC" in lines[0].upper() else ""
+
+    header = []
+    for ln in lines:
+        if "|" in ln:
+            header.append(ln)
+            if len(header) >= 3:
+                break
+    header_text = "\n".join(header).strip()
+
+    prefix = "\n".join([x for x in [appendix_title, header_text] if x]).strip()
+
+    chunks = []
+    current = []
+    for ln in lines:
+        if "|" not in ln:
+            continue
+        current.append(ln)
+        if len(current) >= max_lines:
+            body = "\n".join(current).strip()
+            chunks.append(f"{prefix}\n{body}".strip() if prefix else body)
+            current = []
+
+    if current:
+        body = "\n".join(current).strip()
+        chunks.append(f"{prefix}\n{body}".strip() if prefix else body)
+
+    return [c for c in chunks if c.strip()]
+
+def merge_short_tail(chunks: list[str], min_tokens: int = 80) -> list[str]:
+    if not chunks:
+        return chunks
+    if len(chunks) == 1:
+        return chunks
+
+    last = chunks[-1]
+    if approx_tokens(last) < min_tokens:
+        chunks[-2] = (chunks[-2] + "\n" + last).strip()
+        chunks.pop()
+    return chunks
+
 def split_doc_sections(content: str) -> list[dict[str, Any]]:
     markers = []
 
@@ -264,6 +314,21 @@ def chunk_one_document(
                         )
                     )
                     idx += 1
+
+        elif sec_type == "appendix":
+            chunks = split_appendix_table_chunks(text, max_lines=35)
+            if len(chunks) == 1 and approx_tokens(chunks[0]) > max_tokens:
+                chunks = chunk_text_with_overlap(
+                    chunks[0], target_tokens=target_tokens, max_tokens=max_tokens, overlap_tokens=0
+                )
+
+            chunks = merge_short_tail(chunks, min_tokens=80)
+            for ct in chunks:
+                if len(ct.strip()) < min_chars:
+                    continue
+                out.append(make_chunk_record(doc, ct, idx, sec_type, article_no, None))
+                idx += 1
+
         else:
             chunks = chunk_text_with_overlap(text, target_tokens, max_tokens, overlap_tokens)
             for ct in chunks:
