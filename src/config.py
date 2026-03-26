@@ -60,6 +60,7 @@ class Settings(BaseSettings):
     # Input files
     chunks_input_1k: str = Field(default="data/processed/corpus_1k_chunks.jsonl", alias="CHUNKS_INPUT_1K")
     chunks_input_10k: str = Field(default="data/processed/corpus_10k_chunks.jsonl", alias="CHUNKS_INPUT_10K")
+    
 
 
 
