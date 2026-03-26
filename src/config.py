@@ -53,6 +53,16 @@ class Settings(BaseSettings):
     local_llm_base_url: str = Field(default="http://localhost:8001", alias="LOCAL_LLM_BASE_URL")
     local_llm_model_name: str = Field(default="Qwen/Qwen2.5-3B-Instruct", alias="LOCAL_LLM_MODEL_NAME")
 
+    # Ingest control
+    max_docs_for_ingest: int = Field(default=1000, alias="MAX_DOCS_FOR_INGEST")  # 0 = full
+    sample_seed: int = Field(default=42, alias="SAMPLE_SEED")
+
+    # Input files
+    chunks_input_1k: str = Field(default="data/processed/corpus_1k_chunks.jsonl", alias="CHUNKS_INPUT_1K")
+    chunks_input_10k: str = Field(default="data/processed/corpus_10k_chunks.jsonl", alias="CHUNKS_INPUT_10K")
+
+
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
