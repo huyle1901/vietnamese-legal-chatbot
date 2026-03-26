@@ -1,7 +1,7 @@
 from src.storage.clients import get_opensearch_client
 from src.config import get_settings
 
-q = "khuyết người ứng cử đại biểu hội đồng nhân dân"
+q = "hành lang bảo vệ cống qua đê bao nhiêu mét"
 
 s = get_settings()
 client = get_opensearch_client()
