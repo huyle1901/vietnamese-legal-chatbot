@@ -61,7 +61,9 @@ class Settings(BaseSettings):
     chunks_input_1k: str = Field(default="data/processed/corpus_1k_chunks.jsonl", alias="CHUNKS_INPUT_1K")
     chunks_input_10k: str = Field(default="data/processed/corpus_10k_chunks.jsonl", alias="CHUNKS_INPUT_10K")
 
-
+    # LoRA adapter (for local LLM generation)
+    local_lora_adapter_path: str | None = Field(default=None, alias="LOCAL_LORA_ADAPTER_PATH")
+    
 
 @lru_cache
 def get_settings() -> Settings:
